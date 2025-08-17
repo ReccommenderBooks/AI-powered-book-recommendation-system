@@ -1,0 +1,58 @@
+<!-- templates/home.html -->
+
+{# recommendations/templates/recommendations/home.html #}
+{% extends "recommendations/base.html" %}
+
+
+{% block content %}
+<h1>Your Personalized Book Recommendations</h1>
+
+<div class="recommendations">
+    {% for book in recommendations %}
+    <div class="book-card">
+        <h3>{{ book.title }}</h3>
+        <p>by {{ book.author }} (Avg rating: {{ book.average_rating|floatformat:1 }})</p>
+        
+        <form class="rating-form" data-book-id="{{ book.id }}">
+            <label>Rate this book:</label>
+            <select name="rating">
+                <option value="1">1 ★</option>
+                <option value="2">2 ★★</option>
+                <option value="3">3 ★★★</option>
+                <option value="4">4 ★★★★</option>
+                <option value="5">5 ★★★★★</option>
+            </select>
+            <button type="submit">Submit</button>
+        </form>
+        
+        <p class="explanation">
+            Recommended because users similar to you enjoyed this book.
+        </p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // AJAX rating submission
+    document.querySelectorAll('.rating-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bookId = e.target.dataset.bookId;
+            const rating = e.target.rating.value;
+            
+            const response = await fetch(`/rate/${bookId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({rating: rating})
+            });
+            
+            if (response.ok) {
+                alert('Rating submitted!');
+            }
+        });
+    });
+</script>
+{% endblock %}
